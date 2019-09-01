@@ -1,0 +1,16 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <OutputType>Exe</OutputType>
+    <TargetFramework>netcoreapp2.1</TargetFramework>
+    <RootNamespace>ILBeanCounter</RootNamespace>
+    <PackAsTool>true</PackAsTool>
+    <ToolCommandName>il-beancounter</ToolCommandName>
+    <LangVersion>7.3</LangVersion>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="System.Commandline.Experimental" Version="0.3.0-alpha.19405.1" />
+  </ItemGroup>
+
+</Project>

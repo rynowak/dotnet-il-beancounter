@@ -1,0 +1,58 @@
+trigger:
+- master
+
+variables:
+- group: default-group
+
+pool:
+  vmImage: 'ubuntu-latest'
+
+steps:
+- task: UseDotNet@2
+  displayName: 'Install dotnet SDK'
+  inputs:
+    packageType: sdk
+    version: 3.0.100-preview6-012264
+    installationPath: $(Agent.ToolsDirectory)/dotnet
+
+- task: DotNetCoreCLI@2
+  displayName: Build
+  inputs:
+    command: build
+    projects: '**/*.csproj'
+    arguments: '--configuration $(BuildConfiguration)'
+
+- task: DotNetCoreCLI@2
+  displayName: Test
+  inputs:
+    command: test
+    projects: '**/*Tests/*.csproj'
+    arguments: '--configuration $(BuildConfiguration)'
+
+- task: DotNetCoreCLI@2
+  displayName: 'Pack'
+  inputs:
+    command: pack
+    nobuild: true
+    configurationToPack: $(BuildConfiguration)
+    versioningScheme: byPrereleaseNumber
+    majorVersion: '$(Major)'
+    minorVersion: '$(Minor)'
+    patchVersion: '$(Patch)'
+    packDirectory: '$(Build.ArtifactStagingDirectory)/packages'
+
+- task: PublishBuildArtifacts@1
+  displayName: 'Publish Artifacts'
+  condition: and(succeeded(), eq(variables['Build.SourceBranch'], 'refs/heads/master'))
+  inputs:
+    PathtoPublish: '$(Build.ArtifactStagingDirectory)'
+
+- task: DotNetCoreCLI@2
+  displayName: 'Publish Packages'
+  condition: and(succeeded(), eq(variables['Build.SourceBranch'], 'refs/heads/master'))
+  inputs:
+    command: push
+    nuGetFeedType: external
+    publishFeedCredentials: 'azdo-assets-public'
+    packagesToPush: $(Build.ArtifactStagingDirectory)/packages/*.nupkg
+
