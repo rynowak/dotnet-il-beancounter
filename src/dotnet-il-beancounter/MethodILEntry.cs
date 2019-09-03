@@ -27,6 +27,8 @@ namespace ILBeanCounter
 
         public MethodDefinition Method { get; }
 
+        public string MethodName => Metadata.GetString(Method.Name);
+
         public TypeDefinition DeclaringType => Metadata.GetTypeDefinition(Method.GetDeclaringType());
 
         public string DeclaringTypeName

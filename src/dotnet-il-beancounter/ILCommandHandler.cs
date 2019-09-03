@@ -69,7 +69,7 @@ namespace ILBeanCounter
                         Console.WriteLine("IL sizes grouped by method");
                         foreach (var method in methods)
                         {
-                            Console.WriteLine($"{@method.NamespaceName}{method.DeclaringTypeName}: {method.TotalSizeInBytes} bytes");
+                            Console.WriteLine($"{@method.NamespaceName}{method.DeclaringTypeName}.{method.MethodName}: {method.TotalSizeInBytes} bytes");
                         }
                         break;
                     }
