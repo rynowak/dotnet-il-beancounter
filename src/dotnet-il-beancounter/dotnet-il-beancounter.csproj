@@ -11,6 +11,7 @@
 
   <ItemGroup>
     <PackageReference Include="System.Commandline.Experimental" Version="0.3.0-alpha.19405.1" />
+    <PackageReference Include="System.Reflection.Metadata" Version="1.6.0" />
   </ItemGroup>
 
 </Project>
