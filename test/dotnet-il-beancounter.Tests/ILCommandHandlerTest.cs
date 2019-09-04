@@ -20,7 +20,7 @@ namespace ILBeanCounter
         [InlineData(Grouping.Method)]
         public async Task SanityCheck(Grouping grouping)
         {
-            await ILCommandHandler.ExecuteAsync(Directory, grouping);
+            await ILCommandHandler.ExecuteAsync(Directory, grouping, filter: null);
         }
     }
 }
