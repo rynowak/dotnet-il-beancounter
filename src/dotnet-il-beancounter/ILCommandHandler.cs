@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Reflection.Metadata;
@@ -9,16 +10,15 @@ namespace ILBeanCounter
 {
     public static class ILCommandHandler
     {
-        public static Task<int> ExecuteAsync(DirectoryInfo directory, Grouping grouping)
+        public static Task<int> ExecuteAsync(DirectoryInfo directory, Grouping grouping, string filter)
         {
-            var assemblies = 
+            var assemblies =
                 directory.EnumerateFiles("*.dll", SearchOption.AllDirectories)
                 .Concat(directory.EnumerateFiles("*.exe", SearchOption.AllDirectories));
 
+            var methods = new List<MethodILEntry>();
             foreach (var assembly in assemblies)
             {
-                Console.WriteLine($"Processing: {assembly}");
-
                 PEReader pe;
                 using (var stream = assembly.OpenRead())
                 {
@@ -31,53 +31,52 @@ namespace ILBeanCounter
                 }
 
                 var metadata = pe.GetMetadataReader();
-                var methods = MethodILReader.ReadMethods(pe);
-
-                switch (grouping)
-                {
-                    case Grouping.Assembly:
-                    {
-                        // Do nothing, we already output the IL size at this level in the summary.
-                        break;
-                    }
-
-                    case Grouping.Namespace:
-                    {
-                        Console.WriteLine("IL sizes grouped by namespace");
-                        var methodsByNamespace = methods.GroupBy(m => m.NamespaceName);
-                        foreach (var @namespace in methodsByNamespace)
-                        {
-                            Console.WriteLine($"{@namespace.Key}: {@namespace.Sum(m => m.TotalSizeInBytes)} bytes");
-                        }
-                        break;
-                    }
-
-                    case Grouping.Type:
-                    {
-                        Console.WriteLine("IL sizes grouped by type");
-                        var methodsByType = methods.GroupBy(m => m.DeclaringTopLevelType);
-                        foreach (var type in methodsByType)
-                        {
-                            var @namespace = metadata.GetString(type.Key.Namespace);
-                            Console.WriteLine($"{@namespace}{metadata.GetString(type.Key.Name)}: {@type.Sum(m => m.TotalSizeInBytes)} bytes");
-                        }
-                        break;
-                    }
-
-                    case Grouping.Method:
-                    {
-                        Console.WriteLine("IL sizes grouped by method");
-                        foreach (var method in methods)
-                        {
-                            Console.WriteLine($"{@method.NamespaceName}{method.DeclaringTypeName}.{method.MethodName}: {method.TotalSizeInBytes} bytes");
-                        }
-                        break;
-                    }
-                }
-
-                Console.WriteLine();
+                methods.AddRange(MethodILReader.ReadMethods(pe));
             }
 
+            IEnumerable<IGrouping<string, MethodILEntry>> groups;
+            switch (grouping)
+            {
+                case Grouping.Assembly:
+                    {
+                        groups = methods.GroupBy(m => m.AssemblyName);
+                        break;
+                    }
+
+                case Grouping.Namespace:
+                    {
+                        groups = methods.GroupBy(m => m.NamespaceName);
+                        break;
+                    }
+
+                case Grouping.Type:
+                    {
+                        groups = methods.GroupBy(m => m.FullyQualifiedTypeName);
+                        break;
+                    }
+
+                case Grouping.Method:
+                    {
+                        groups = methods.GroupBy(m => $"{m.FullyQualifiedTypeName}.{m.MethodName}");
+                        break;
+                    }
+
+                default:
+                    {
+                        throw new Exception($"Unknown grouping type: {grouping}.");
+                    }
+            }
+
+            if (filter != null)
+            {
+                groups = groups.Where(g => g.Key.StartsWith(filter));
+            }
+
+            foreach (var group in groups)
+            {
+                Console.WriteLine($"{group.Key}: {group.Sum(m => m.TotalSizeInBytes)} bytes");
+            }
+            
             return Task.FromResult(0);
         }
     }

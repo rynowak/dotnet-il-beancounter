@@ -34,12 +34,17 @@ namespace ILBeanCounter
                 {
                     Argument = new Argument<Grouping>("grouping", Grouping.Assembly),
                 },
+
+                new Option(new[] { "-f", "--filter", }, "filter results by prefix")
+                {
+                    Argument = new Argument<string>("prefix"),
+                }
             };
 
             il.Description = "shows detailed information about the size of IL in assemblies";
-            il.Handler = CommandHandler.Create<DirectoryInfo, Grouping>((input, groupBy) =>
+            il.Handler = CommandHandler.Create<DirectoryInfo, Grouping, string>((input, groupBy, filter) =>
             {
-                return ILCommandHandler.ExecuteAsync(input, groupBy);
+                return ILCommandHandler.ExecuteAsync(input, groupBy, filter);
             });
 
             var command = new RootCommand();

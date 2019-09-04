@@ -23,6 +23,8 @@ namespace ILBeanCounter
             IL = il;
         }
 
+        public string AssemblyName => Metadata.GetString(Metadata.GetAssemblyDefinition().Name);
+
         public MetadataReader Metadata { get; }
 
         public MethodDefinition Method { get; }
@@ -66,6 +68,15 @@ namespace ILBeanCounter
                 return type;
             }
         }
+
+        public string FullyQualifiedTypeName
+        {
+            get
+            {
+                return $"{NamespaceName}.{DeclaringTypeName}";
+            }
+        }
+
         public string NamespaceName => Metadata.GetString(DeclaringTopLevelType.Namespace);
 
 
