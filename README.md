@@ -11,7 +11,7 @@ Produce useful tooling for understanding the composition of .NET assembly files 
 CI builds are pushed to `https://pkgs.dev.azure.com/nowakra/dotnet-il-beancounter/_packaging/public/nuget/v3/index.json`.
 
 ```txt
-dotnet tool install dotnet-il-beancounter --version 0.1.0-* --global ----add-source https://pkgs.dev.azure.com/nowakra/dotnet-il-beancounter/_packaging/public/nuget/v3/index.json
+dotnet tool install dotnet-il-beancounter --version 0.1.0-* --global --add-source https://pkgs.dev.azure.com/nowakra/dotnet-il-beancounter/_packaging/public/nuget/v3/index.json
 ```
 
 ## PE Info
